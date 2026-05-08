@@ -1,11 +1,46 @@
 import time
 import json
 import requests
+import platform
+import os
 from datetime import datetime, timezone
 
 MODEL = "qwen2.5-coder"
 URL = "http://localhost:11434/api/generate"
+LOG_FILE = "logs.jsonl"
+METADATA_FILE = "run_metadata.json"
 
+
+# ----------------------------
+# System metadata
+# ----------------------------
+
+def get_system_info():
+    return {
+        "os": platform.system(),
+        "os_version": platform.version(),
+        "machine": platform.machine(),
+        "processor": platform.processor(),
+        "hostname": platform.node(),
+        "python_version": platform.python_version(),
+        "cpu_count": os.cpu_count()
+    }
+
+
+def write_system_metadata():
+    metadata = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "model": MODEL,
+        "system": get_system_info()
+    }
+
+    with open(METADATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(metadata, f, indent=2)
+
+
+# ----------------------------
+# Model inference
+# ----------------------------
 
 def call_model(prompt: str):
     start = time.perf_counter()
@@ -33,7 +68,7 @@ def call_model(prompt: str):
 
     end = time.perf_counter()
 
-    # HTTP-level error
+    # HTTP error
     if response.status_code != 200:
         return {
             "model": MODEL,
@@ -78,6 +113,10 @@ def call_model(prompt: str):
     }
 
 
+# ----------------------------
+# Logging
+# ----------------------------
+
 def log(result):
     entry = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -89,11 +128,18 @@ def log(result):
         "error_type": result.get("error_type", None)
     }
 
-    with open("logs.jsonl", "a", encoding="utf-8") as f:
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 
+# ----------------------------
+# Main experiment loop
+# ----------------------------
+
 if __name__ == "__main__":
+
+    # write system info once per run
+    write_system_metadata()
 
     prompts = [
         "write a function that checks if a string is a palindrome.",
@@ -104,5 +150,6 @@ if __name__ == "__main__":
     for prompt in prompts:
         result = call_model(prompt)
         log(result)
+
         print("\n--- OUTPUT ---\n")
         print(result.get("output") or result.get("error_type"))
