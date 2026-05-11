@@ -1,0 +1,10 @@
+[
+  {
+    "category": "explanation",
+    "prompt": "explain recursion in simple terms."
+  },
+  {
+    "category": "explanation",
+    "prompt": "explain the difference between list and tuple in Python."
+  }
+]

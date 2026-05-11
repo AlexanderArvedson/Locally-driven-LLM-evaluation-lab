@@ -1,0 +1,14 @@
+[
+  {
+    "category": "code_generation",
+    "prompt": "write a function that checks if a string is a palindrome."
+  },
+  {
+    "category": "code_generation",
+    "prompt": "write a python function that sorts a list in place using insertion sort."
+  },
+  {
+    "category": "code_generation",
+    "prompt": "generate a unit test for a function that reverses a string (pytest)."
+  }
+]
