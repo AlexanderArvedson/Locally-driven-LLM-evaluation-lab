@@ -2,9 +2,7 @@ import json
 import os
 import argparse
 from collections import defaultdict
-
-LOG_DIR = "logs"
-METADATA_DIR = "metadata"
+from shared_paths import LOG_DIR, METADATA_DIR
 
 # Utility to read JSONL files and yield parsed objects, skipping invalid lines
 def read_jsonl(path):

@@ -6,6 +6,7 @@ import os
 from datetime import datetime, timezone
 import uuid
 import glob
+from shared_paths import LOG_DIR, METADATA_DIR
 
 # model configurations
 MODELS = [
@@ -15,11 +16,6 @@ MODELS = [
 
 # API endpoint for model inference
 URL = "http://localhost:11434/api/generate"
-
-# Directories and filenames per run
-LOG_DIR = "logs"
-METADATA_DIR = "metadata"
-
 
 # ----------------------------
 # System metadata
