@@ -6,6 +6,7 @@ Compliance measurement framework for evaluating LLM-generated code against task 
 
 ```
 evaluation_suite/
+├── models.py         # Registered model list
 ├── runner.py           # Single evaluation run
 ├── batch_runner.py     # Multiple runs with statistics
 ├── scorer.py           # Compliance scoring logic
@@ -24,11 +25,7 @@ evaluation_suite/
 python3 runner.py
 ```
 
-Outputs JSON with:
-- Model output
-- Score (0-10)
-- Compliance status (is_compliant: true/false)
-- Compliance issues (list of detected violations)
+Runs the task once for every registered model and outputs JSON for each model.
 
 ### Batch Runs with Statistics
 ```bash
@@ -39,6 +36,7 @@ Produces:
 - Summary statistics
 - Failure mode distribution
 - Compliance rate analysis
+- Per-model score distribution
 - Detailed results in `batch_results.json`
 
 ## Scorer Design

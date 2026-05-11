@@ -10,12 +10,12 @@ import json
 import sys
 from collections import defaultdict
 from tasks.task_01.task_01 import TASK_01_PROMPT
+from models import REGISTERED_MODELS
 from scorer import score_model_output
 
-MODEL = "qwen2.5-coder"
 URL = "http://localhost:11434/api/generate"
 
-def run_model(prompt):
+def run_model(model, prompt):
     """Run model once and capture output."""
     start = time.perf_counter()
     
@@ -23,7 +23,7 @@ def run_model(prompt):
         response = requests.post(
             URL,
             json={
-                "model": MODEL,
+                "model": model,
                 "prompt": prompt,
                 "stream": False
             },
@@ -94,49 +94,51 @@ def run_batch(n_runs=10, verbose=True):
     
     results = []
     failure_modes = defaultdict(int)
-    scores = []
+    scores_by_model = defaultdict(list)
     
     print(f"\n{'='*60}")
     print(f"BATCH COMPLIANCE MEASUREMENT: {n_runs} runs")
     print(f"{'='*60}\n")
     
     for i in range(n_runs):
-        print(f"[{i+1:2d}/{n_runs}] Running evaluation...", end=" ", flush=True)
-        
-        run_result = run_model(TASK_01_PROMPT)
-        
-        if "error" in run_result:
-            print(f"ERROR: {run_result['error']}")
-            continue
-        
-        score_result = score_model_output(run_result["output"])
-        
-        # Analyze failures
-        failures = analyze_failure_modes(run_result["output"])
-        for failure in failures:
-            failure_modes[failure] += 1
-        
-        # Collect metrics
-        score_val = score_result["score"]
-        scores.append(score_val)
-        
-        # Store full result
-        results.append({
-            "run": i + 1,
-            "score": score_val,
-            "normalized": score_result["normalized"],
-            "is_compliant": score_result["is_compliant"],
-            "latency_ms": run_result["latency_ms"],
-            "failure_modes": failures,
-            "compliance_issues": score_result["compliance_issues"]
-        })
-        
-        status = "✓ COMPLIANT" if score_result["is_compliant"] else "✗ NON-COMPLIANT"
-        print(f"{status} | Score: {score_val:2d}/10 | Failures: {len(failures)}")
-        
-        if verbose and failures:
+        for model in REGISTERED_MODELS:
+            print(f"[{i+1:2d}/{n_runs}] {model}...", end=" ", flush=True)
+
+            run_result = run_model(model, TASK_01_PROMPT)
+
+            if "error" in run_result:
+                print(f"ERROR: {run_result['error']}")
+                continue
+
+            score_result = score_model_output(run_result["output"])
+
+            # Analyze failures
+            failures = analyze_failure_modes(run_result["output"])
             for failure in failures:
-                print(f"         - {failure}")
+                failure_modes[failure] += 1
+
+            # Collect metrics
+            score_val = score_result["score"]
+            scores_by_model[model].append(score_val)
+
+            # Store full result
+            results.append({
+                "run": i + 1,
+                "model": model,
+                "score": score_val,
+                "normalized": score_result["normalized"],
+                "is_compliant": score_result["is_compliant"],
+                "latency_ms": run_result["latency_ms"],
+                "failure_modes": failures,
+                "compliance_issues": score_result["compliance_issues"]
+            })
+
+            status = "✓ COMPLIANT" if score_result["is_compliant"] else "✗ NON-COMPLIANT"
+            print(f"{status} | Score: {score_val:2d}/10 | Failures: {len(failures)}")
+
+            if verbose and failures:
+                for failure in failures:
+                    print(f"         - {failure}")
     
     # ===== STATISTICS =====
     print(f"\n{'='*60}")
@@ -149,16 +151,24 @@ def run_batch(n_runs=10, verbose=True):
     print(f"Total runs:              {len(results)}")
     print(f"Compliant outputs:       {compliant_count}/{len(results)} ({compliance_rate:.1f}%)")
     print(f"Non-compliant outputs:   {len(results) - compliant_count}/{len(results)} ({100-compliance_rate:.1f}%)")
-    print(f"\nScore distribution:")
-    print(f"  Mean score:            {sum(scores) / len(scores):.2f}/10")
-    print(f"  Median score:          {sorted(scores)[len(scores)//2]}/10")
-    print(f"  Min score:             {min(scores)}/10")
-    print(f"  Max score:             {max(scores)}/10")
-    print(f"  Std dev:               {calculate_stddev(scores):.2f}")
+    print(f"\nScore distribution by model:")
+    for model in REGISTERED_MODELS:
+        model_scores = scores_by_model.get(model, [])
+        if not model_scores:
+            continue
+        print(
+            f"  {model:20s} "
+            f"mean={sum(model_scores) / len(model_scores):.2f}/10 "
+            f"median={sorted(model_scores)[len(model_scores)//2]}/10 "
+            f"min={min(model_scores)}/10 "
+            f"max={max(model_scores)}/10 "
+            f"std={calculate_stddev(model_scores):.2f}"
+        )
     
     print(f"\nFailure mode distribution:")
+    total_result_count = len(results) if results else 1
     for mode, count in sorted(failure_modes.items(), key=lambda x: -x[1]):
-        pct = (count / (len(results) * 2.5) * 100)  # Normalize by runs * avg failures/run
+        pct = (count / total_result_count * 100)
         print(f"  {mode:40s} {count:3d} occurrences ({pct:5.1f}%)")
     
     # ===== COMPLIANCE CATEGORIES =====
@@ -185,7 +195,11 @@ def run_batch(n_runs=10, verbose=True):
             "summary": {
                 "total_runs": len(results),
                 "compliant_rate": compliance_rate,
-                "mean_score": sum(scores) / len(scores) if scores else 0,
+                "registered_models": REGISTERED_MODELS,
+                "mean_score": (
+                    sum(score for score_list in scores_by_model.values() for score in score_list)
+                    / sum(len(score_list) for score_list in scores_by_model.values())
+                ) if results else 0,
                 "failure_modes": dict(failure_modes)
             },
             "runs": results
