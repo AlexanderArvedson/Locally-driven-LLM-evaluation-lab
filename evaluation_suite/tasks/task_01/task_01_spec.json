@@ -19,7 +19,12 @@
     "constraints": [
       "Do not introduce external dependencies",
       "Return only Python code",
-      "Do not change function signature"
+      "Do not change function signature",
+      "CRITICAL: Function MUST remain standalone (no classes, no OOP)",
+      "CRITICAL: Signature MUST be: def generate_user_report(users)",
+      "CRITICAL: Must NOT introduce 'self' parameter or convert to instance method",
+      "CRITICAL: Must return a string, not object/dict",
+      "Do NOT use class definitions or OOP patterns"
     ]
   },
 
@@ -28,22 +33,57 @@
     "sorting_active_users": true,
     "correct_counts": true,
     "robust_input_handling": true,
-    "deterministic_output": true
+    "deterministic_output": true,
+    "signature_compliance": true,
+    "structural_integrity": "must remain standalone function"
   },
 
   "evaluation": {
-    "method": "rule_based",
-    "scoring_weights": {
-      "deduplication": 2,
-      "sorting_active_users": 2,
-      "correct_counts": 3,
-      "robust_input_handling": 2,
-      "deterministic_output": 1
+    "method": "rule_based_compliance",
+    "scoring_rules": {
+      "signature_compliance": {
+        "description": "Function signature must be: def generate_user_report(users)",
+        "penalty_if_violated": -3,
+        "check_for": "def generate_user_report(users)"
+      },
+      "no_class_introduction": {
+        "description": "Must not introduce class definitions",
+        "penalty_if_violated": -2,
+        "check_for": "absence of 'class' keyword"
+      },
+      "no_self_parameter": {
+        "description": "Must not convert to instance method with 'self'",
+        "penalty_if_violated": -3,
+        "check_for": "absence of 'def generate_user_report(self'"
+      },
+      "deduplication": {
+        "points": 2,
+        "check_for": "set() or 'seen' variable"
+      },
+      "sorting_active_users": {
+        "points": 2,
+        "check_for": "sort() or sorted() call"
+      },
+      "correct_counts": {
+        "points": 2,
+        "check_for": "active/inactive user counts"
+      },
+      "robust_input_handling": {
+        "points": 1,
+        "check_for": "isinstance() or type checks"
+      },
+      "string_return_format": {
+        "points": 1,
+        "check_for": "return statement with string concatenation or .join()"
+      }
     },
-    "max_score": 10
+    "max_score": 10,
+    "compliance_threshold": "All critical constraints must be met for score > 5"
   },
+
+  "research_signal": "This task measures model compliance failure under constrained refactoring. Key metric: Does the model introduce OOP/class patterns when explicitly told to keep standalone function?",
 
   "difficulty": "easy-medium",
 
-  "notes": "This task is intentionally designed to test decomposition + correctness reasoning in a single-file legacy function."
+  "notes": "This task is intentionally designed to test decomposition + correctness reasoning while measuring structural drift. The model's tendency to introduce classes/OOP despite explicit constraints is the research insight."
 }
