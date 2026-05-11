@@ -220,5 +220,5 @@ __marimo__/
 # run data and results
 logs.jsonl
 run_metadata.json
-logs/*
-metadata/*
+logs/
+metadata/
