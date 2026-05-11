@@ -1,0 +1,49 @@
+{
+  "task_id": "task_01",
+  "name": "User report refactoring + bugfix",
+  "category": "refactoring_debugging",
+
+  "input_type": "python_function",
+  "output_type": "python_function",
+
+  "model_instructions": {
+    "objective": "Refactor and fix a god function that generates a user report.",
+    "rules": [
+      "Fix logical bugs in aggregation",
+      "Remove duplicate users by id",
+      "Separate active and inactive users correctly",
+      "Sort active users by name",
+      "Ensure deterministic output",
+      "Preserve original functionality"
+    ],
+    "constraints": [
+      "Do not introduce external dependencies",
+      "Return only Python code",
+      "Do not change function signature"
+    ]
+  },
+
+  "expected_properties": {
+    "deduplication": true,
+    "sorting_active_users": true,
+    "correct_counts": true,
+    "robust_input_handling": true,
+    "deterministic_output": true
+  },
+
+  "evaluation": {
+    "method": "rule_based",
+    "scoring_weights": {
+      "deduplication": 2,
+      "sorting_active_users": 2,
+      "correct_counts": 3,
+      "robust_input_handling": 2,
+      "deterministic_output": 1
+    },
+    "max_score": 10
+  },
+
+  "difficulty": "easy-medium",
+
+  "notes": "This task is intentionally designed to test decomposition + correctness reasoning in a single-file legacy function."
+}
