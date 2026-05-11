@@ -222,3 +222,8 @@ logs.jsonl
 run_metadata.json
 logs/
 metadata/
+
+# evaluation suite outputs
+evaluation_suite/results/
+evaluation_suite/batch_results.json
+evaluation_suite/logs/
