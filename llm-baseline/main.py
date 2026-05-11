@@ -5,7 +5,10 @@ import platform
 import os
 from datetime import datetime, timezone
 
-MODEL = "qwen2.5-coder"
+MODELS = [
+    "qwen2.5-coder",
+    "llama3"
+    ]
 URL = "http://localhost:11434/api/generate"
 LOG_FILE = "logs.jsonl"
 METADATA_FILE = "run_metadata.json"
@@ -30,7 +33,7 @@ def get_system_info():
 def write_system_metadata():
     metadata = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "model": MODEL,
+        "model": MODELS,
         "system": get_system_info()
     }
 
@@ -49,7 +52,7 @@ def call_model(prompt: str):
         response = requests.post(
             URL,
             json={
-                "model": MODEL,
+                "model": MODELS,
                 "prompt": prompt,
                 "stream": False
             },
@@ -58,7 +61,7 @@ def call_model(prompt: str):
     except requests.exceptions.RequestException as e:
         end = time.perf_counter()
         return {
-            "model": MODEL,
+            "model": MODELS,
             "prompt": prompt,
             "error": True,
             "error_type": "request_exception",
@@ -71,7 +74,7 @@ def call_model(prompt: str):
     # HTTP error
     if response.status_code != 200:
         return {
-            "model": MODEL,
+            "model": MODELS,
             "prompt": prompt,
             "error": True,
             "error_type": "http_error",
@@ -84,7 +87,7 @@ def call_model(prompt: str):
         data = response.json()
     except ValueError:
         return {
-            "model": MODEL,
+            "model": MODELS,
             "prompt": prompt,
             "error": True,
             "error_type": "invalid_json",
@@ -96,7 +99,7 @@ def call_model(prompt: str):
 
     if output is None:
         return {
-            "model": MODEL,
+            "model": MODELS,
             "prompt": prompt,
             "error": True,
             "error_type": "missing_response_field",
@@ -105,7 +108,7 @@ def call_model(prompt: str):
         }
 
     return {
-        "model": MODEL,
+        "model": MODELS,
         "prompt": prompt,
         "output": output,
         "error": False,
