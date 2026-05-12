@@ -5,12 +5,13 @@ Research on locally-run LLM compliance and refactoring capabilities. Measures ho
 ## Quick Start
 
 ```bash
+# From project root
+
 # Single evaluation
-cd evaluation_suite
-python3 runner.py
+uv run -m evaluation_suite.runner
 
 # Batch with statistics (10 runs)
-python3 batch_runner.py 10
+uv run -m evaluation_suite.batch_runner 10
 ```
 
 ## Structure

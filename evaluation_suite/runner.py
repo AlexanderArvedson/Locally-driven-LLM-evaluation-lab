@@ -1,13 +1,7 @@
-import sys
-from pathlib import Path
-
-_PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(_PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(_PROJECT_ROOT))
-
 import requests
 import time
 import json
+from pathlib import Path
 from evaluation_suite.tasks.task_01.task_01 import TASK_01_PROMPT
 from core.models import get_registered_models
 from evaluation_suite.scorer import score_model_output
