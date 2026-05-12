@@ -8,7 +8,7 @@ from scorer import score_model_output
 from utils import generate_run_id, save_run_results
 
 URL = "http://localhost:11434/api/generate"
-RESULTS_DIR = Path("results/singel_runs")
+RESULTS_DIR = Path("results/singular_runs")
 
 def run_model(model, prompt):
     start = time.perf_counter()
