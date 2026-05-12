@@ -20,16 +20,18 @@ evaluation_suite/
 
 ## Running Evaluations
 
+All commands should be run from the project root.
+
 ### Single Evaluation
 ```bash
-python3 runner.py
+uv run -m evaluation_suite.runner
 ```
 
 Runs the task once for every registered model and outputs JSON for each model.
 
 ### Batch Runs with Statistics
 ```bash
-python3 batch_runner.py 10  # Run 10 evaluations
+uv run -m evaluation_suite.batch_runner 10  # Run 10 evaluations
 ```
 
 Produces:
