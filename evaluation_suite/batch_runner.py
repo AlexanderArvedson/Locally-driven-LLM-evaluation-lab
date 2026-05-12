@@ -6,6 +6,7 @@ Runs evaluation N times and collects failure mode statistics.
 import requests
 import time
 import json
+import sys
 from pathlib import Path
 from collections import defaultdict
 from evaluation_suite.tasks.task_01.task_01 import TASK_01_PROMPT
