@@ -8,12 +8,15 @@ import requests
 import time
 import json
 import sys
+from pathlib import Path
 from collections import defaultdict
 from tasks.task_01.task_01 import TASK_01_PROMPT
 from models import REGISTERED_MODELS
 from scorer import score_model_output
+from utils import generate_run_id, save_run_results
 
 URL = "http://localhost:11434/api/generate"
+RESULTS_DIR = Path("evaluation_suite/results/batch_runs")
 
 def run_model(model, prompt):
     """Run model once and capture output."""
@@ -86,11 +89,15 @@ def analyze_failure_modes(output_text):
     if "active" not in output_text or "inactive" not in output_text:
         failures.append("no_active_inactive_separation")
     
+    # Return a list of detected failure modes (or a sentinel if none)
     return failures if failures else ["no_failures_detected"]
 
 
 def run_batch(n_runs=10, verbose=True):
     """Run evaluation N times and collect statistics."""
+    
+    run_id = generate_run_id()
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     
     results = []
     failure_modes = defaultdict(int)
@@ -98,6 +105,7 @@ def run_batch(n_runs=10, verbose=True):
     
     print(f"\n{'='*60}")
     print(f"BATCH COMPLIANCE MEASUREMENT: {n_runs} runs")
+    print(f"Run ID: {run_id}")
     print(f"{'='*60}\n")
     
     for i in range(n_runs):
@@ -189,25 +197,27 @@ def run_batch(n_runs=10, verbose=True):
         print(f"{category:30s}: {count:3d} failures")
     
     # Save detailed results
-    output_file = "results/batch_results.json"
-    with open(output_file, "w") as f:
-        json.dump({
-            "summary": {
-                "total_runs": len(results),
-                "compliant_rate": compliance_rate,
-                "registered_models": REGISTERED_MODELS,
-                "mean_score": (
-                    sum(score for score_list in scores_by_model.values() for score in score_list)
-                    / sum(len(score_list) for score_list in scores_by_model.values())
-                ) if results else 0,
-                "failure_modes": dict(failure_modes)
-            },
-            "runs": results
-        }, f, indent=2)
+    output_file = RESULTS_DIR / f"batch_results_{run_id}.json"
     
+    batch_data = {
+        "summary": {
+            "total_runs": len(results),
+            "compliant_rate": compliance_rate,
+            "registered_models": REGISTERED_MODELS,
+            "mean_score": (
+                sum(score for score_list in scores_by_model.values() for score in score_list)
+                / sum(len(score_list) for score_list in scores_by_model.values())
+            ) if results else 0,
+            "failure_modes": dict(failure_modes)
+        },
+        "runs": results
+    }
+    
+    save_run_results(run_id, batch_data, str(output_file))
     print(f"\nDetailed results saved to: {output_file}")
     
-    return results, failure_modes, scores
+    # Return collected results, aggregated failure mode counts, and per-model scores
+    return results, failure_modes, scores_by_model
 
 
 def calculate_stddev(values):
