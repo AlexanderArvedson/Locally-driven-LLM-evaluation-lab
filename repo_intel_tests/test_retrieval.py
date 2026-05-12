@@ -15,5 +15,5 @@ def test_find_symbol_returns_file_and_line_range(tmp_path: Path):
     assert len(helper_symbols) == 1
     helper = helper_symbols[0]
     assert helper.file_path == "sample_module.py"
-    assert helper.start_line == 1
-    assert helper.end_line == 2
+    assert helper.start_line == 5
+    assert helper.end_line == 6

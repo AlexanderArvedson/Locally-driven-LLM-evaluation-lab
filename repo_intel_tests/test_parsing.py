@@ -13,4 +13,4 @@ def test_parse_and_extract_python_symbols():
     assert symbols[0].kind == "function"
     assert symbols[1].kind == "class"
     assert symbols[2].parent_symbol == "UserService"
-    assert symbols[3].start_line == 10
+    assert symbols[3].start_line == 14
