@@ -8,7 +8,15 @@ def grep(query: str, path: str = ".") -> list[dict]:
     Returns structured matches instead of raw text.
     """
 
-    cmd = ["rg", query, path, "--line-number", "--no-heading"]
+    cmd = [
+    "rg",
+    query,
+    path,
+    "--line-number",
+    "--no-heading",
+    "--type",
+    "py"
+]
 
     result = subprocess.run(
         cmd,
