@@ -5,8 +5,8 @@ from __future__ import annotations
 
 from hashlib import sha1
 
-from .core import Symbol
-from .parsing import ParsedFile
+from repo_intel.core import Symbol
+from repo_intel.parsing import ParsedFile
 
 # This function generates a stable symbol ID based on the file path, symbol name, kind, and location in the source code, using a SHA-1 hash of this information.
 def _stable_symbol_id(file_path: str, name: str, kind: str, start_line: int, end_line: int) -> str:

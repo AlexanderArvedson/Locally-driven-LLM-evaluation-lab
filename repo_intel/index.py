@@ -6,7 +6,7 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-from .core import RepositorySnapshot, Symbol
+from repo_intel.core import RepositorySnapshot, Symbol
 
 
 SCHEMA = """

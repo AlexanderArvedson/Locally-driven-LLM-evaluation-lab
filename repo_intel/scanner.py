@@ -5,7 +5,7 @@ from __future__ import annotations
 from fnmatch import fnmatch
 from pathlib import Path
 
-from .core import FileNode
+from repo_intel.core import FileNode
 
 # Default directories to ignore when scanning the repository, in addition to .gitignore patterns.
 DEFAULT_IGNORED_DIRS = {

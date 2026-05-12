@@ -35,16 +35,16 @@ class RepositorySnapshot:
 # The RepoIntel class is the main entry point for analyzing a repository.
 class RepoIntel:
     def __init__(self, repo_path: str | Path, db_path: str | Path):
-        from .index import RepositoryIndex
+        from repo_intel.index import RepositoryIndex
 
         self.repo_path = Path(repo_path)
         self.db_path = Path(db_path)
         self.repository_index = RepositoryIndex(self.db_path)
 
     def rebuild(self) -> RepositorySnapshot:
-        from .extraction import extract_symbols
-        from .parsing import parse_file
-        from .scanner import scan_repository
+        from repo_intel.extraction import extract_symbols
+        from repo_intel.parsing import parse_file
+        from repo_intel.scanner import scan_repository
 
         files = scan_repository(self.repo_path)
         symbols: list[Symbol] = []

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .scanner import detect_language
+from repo_intel.scanner import detect_language
 
 # The ParsedFile dataclass represents a parsed source code file, including its path, detected language, source bytes, and parsed syntax tree.
 @dataclass(frozen=True)

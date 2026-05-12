@@ -1,8 +1,8 @@
 # This file contains the RetrievalAPI class, which provides a high-level interface for querying the RepositoryIndex to find symbols by name,
 from __future__ import annotations
 
-from .core import Symbol
-from .index import RepositoryIndex
+from repo_intel.core import Symbol
+from repo_intel.index import RepositoryIndex
 
 # The RetrievalAPI class provides a high-level interface for querying the RepositoryIndex to find symbols by name.
 class RetrievalAPI:
