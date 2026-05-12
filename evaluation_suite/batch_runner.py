@@ -1,19 +1,23 @@
 #!/usr/bin/env python3
-"""
-Batch compliance measurement framework.
+"""Batch compliance measurement framework.
 Runs evaluation N times and collects failure mode statistics.
 """
+
+import sys
+from pathlib import Path
+
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
 
 import requests
 import time
 import json
-import sys
-from pathlib import Path
 from collections import defaultdict
-from tasks.task_01.task_01 import TASK_01_PROMPT
-from models import REGISTERED_MODELS
-from scorer import score_model_output
-from utils import generate_run_id, save_run_results
+from evaluation_suite.tasks.task_01.task_01 import TASK_01_PROMPT
+from core.models import get_registered_models
+from evaluation_suite.scorer import score_model_output
+from evaluation_suite.utils import generate_run_id, save_run_results
 
 URL = "http://localhost:11434/api/generate"
 RESULTS_DIR = Path("evaluation_suite/results/batch_runs")
@@ -109,7 +113,7 @@ def run_batch(n_runs=10, verbose=True):
     print(f"{'='*60}\n")
     
     for i in range(n_runs):
-        for model in REGISTERED_MODELS:
+        for model in get_registered_models():
             print(f"[{i+1:2d}/{n_runs}] {model}...", end=" ", flush=True)
 
             run_result = run_model(model, TASK_01_PROMPT)
@@ -160,7 +164,7 @@ def run_batch(n_runs=10, verbose=True):
     print(f"Compliant outputs:       {compliant_count}/{len(results)} ({compliance_rate:.1f}%)")
     print(f"Non-compliant outputs:   {len(results) - compliant_count}/{len(results)} ({100-compliance_rate:.1f}%)")
     print(f"\nScore distribution by model:")
-    for model in REGISTERED_MODELS:
+    for model in get_registered_models():
         model_scores = scores_by_model.get(model, [])
         if not model_scores:
             continue
@@ -203,7 +207,7 @@ def run_batch(n_runs=10, verbose=True):
         "summary": {
             "total_runs": len(results),
             "compliant_rate": compliance_rate,
-            "registered_models": REGISTERED_MODELS,
+            "registered_models": get_registered_models(),
             "mean_score": (
                 sum(score for score_list in scores_by_model.values() for score in score_list)
                 / sum(len(score_list) for score_list in scores_by_model.values())
