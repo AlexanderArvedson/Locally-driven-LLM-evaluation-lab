@@ -1,8 +1,1 @@
-# This file defines the list of registered models used for testing in the evaluation suite.
-
-# Each model name should correspond to a valid model that can be called by the runner.
-REGISTERED_MODELS = [
-    "qwen2.5-coder",
-    "llama3",
-    "mistral",
-]
+from core.models import REGISTERED_MODELS, ModelSpec, get_registered_models
