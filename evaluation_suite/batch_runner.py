@@ -20,7 +20,7 @@ from evaluation_suite.scorer import score_model_output
 from evaluation_suite.utils import generate_run_id, save_run_results
 
 URL = "http://localhost:11434/api/generate"
-RESULTS_DIR = Path("evaluation_suite/results/batch_runs")
+RESULTS_DIR = Path(__file__).resolve().parent / "results" / "batch_runs"
 
 def run_model(model, prompt):
     """Run model once and capture output."""
