@@ -2,51 +2,73 @@ from repo_intel.core import RepoIntel
 from tools.grep import grep
 from tools.git import git_changed_files
 
+
 class ContextBuilder:
 
     def __init__(self, repo: RepoIntel):
         self.repo = repo
 
-    
-    def build(self, task: str) -> str:
+    def build(self, query: str) -> str:
 
-        context_parts = []
+        context = []
 
-        # task
-        context_parts.append(f"TASK:\n{task}\n")
+        context.append(f"TASK:\n{query}\n")
 
-        # structured retrieval
-        symbols = self.repo.find_symbol(task)
+        # -----------------------
+        # 1. REPO INTEL (PRIMARY)
+        # -----------------------
+        symbols = self.repo.find_symbol(query)
 
         if symbols:
-            context_parts.append("RELEVANT SYMBOLS:\n")
+            context.append("REPO INTEL MATCHES:\n")
 
-            for symbol in symbols:
-                context_parts.append(
-                    f"- {symbol.name} "
-                    f"({symbol.file_path}:{symbol.start_line})"
-                )
-        
-        # grep fallback
+            seen = set()
 
-        grep_results = grep("task")
+            for s in symbols:
+                key = (s.name, s.file_path)
 
-        if grep_results:
-            context_parts.append("\nGREP MATCHES:\n")
+                if key in seen:
+                    continue
 
-            for match in grep_results[:5]:
-                context_parts.append(
-                    f"- {match['file']}:{match['line']} "
-                    f"{match['text']}"
+                seen.add(key)
+
+                context.append(
+                    f"- {s.name} ({s.file_path}:{s.start_line})"
                 )
 
-        # Git awareness
+        # -----------------------
+        # 2. GIT (SECONDARY CONTEXT)
+        # -----------------------
         changed_files = git_changed_files()
 
         if changed_files:
-            context_parts.append("\nCHANGED FILES:\n")
+            context.append("\nCHANGED FILES:\n")
 
-            for file in changed_files:
-                context_parts.append(f"- {file}")
+            for f in changed_files:
+                context.append(f"- {f}")
 
-        return "\n".join(context_parts)
+        # -----------------------
+        # 3. GREP (STRICT FALLBACK ONLY)
+        # -----------------------
+        # IMPORTANT: no query expansion anymore
+        grep_results = grep(query)
+
+        if grep_results:
+            context.append("\nGREP MATCHES (fallback):\n")
+
+            seen_files = set()
+
+            for m in grep_results:
+                if m["file"] in seen_files:
+                    continue
+
+                seen_files.add(m["file"])
+
+                context.append(
+                    f"- {m['file']}:{m['line']} {m['text']}"
+                )
+
+                if len(seen_files) >= 3:
+                    break
+
+        return "\n".join(context)

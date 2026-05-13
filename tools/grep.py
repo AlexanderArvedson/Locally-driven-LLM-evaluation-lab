@@ -1,22 +1,25 @@
-# tools/grep.py
 import subprocess
-from pathlib import Path
+
 
 def grep(query: str, path: str = ".") -> list[dict]:
     """
-    Simple ripgrep wrapper.
-    Returns structured matches instead of raw text.
+    Scoped ripgrep search.
+    Intended ONLY as fallback signal when structured retrieval fails.
     """
 
     cmd = [
-    "rg",
-    query,
-    path,
-    "--line-number",
-    "--no-heading",
-    "--type",
-    "py"
-]
+        "rg",
+        query,
+        path,
+        "--line-number",
+        "--no-heading",
+        "--type",
+        "py",
+        "--glob", "!context/**",
+        "--glob", "!tools/**",
+        "--glob", "!evaluation_suite/**",
+        "--glob", "!data/sqlite/**",
+    ]
 
     result = subprocess.run(
         cmd,
@@ -24,10 +27,12 @@ def grep(query: str, path: str = ".") -> list[dict]:
         text=True
     )
 
+    if result.returncode not in (0, 1):
+        raise RuntimeError(result.stderr.strip())
+
     matches = []
 
     for line in result.stdout.splitlines():
-        # format: file:line:text
         try:
             file, line_no, text = line.split(":", 2)
             matches.append({

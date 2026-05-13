@@ -1,9 +1,14 @@
-# tools/git.py
-
 import subprocess
 
 
-def _run_git_command(cmd: list[str]) -> list[str]:
+IGNORE_PATTERNS = [
+    ".db",
+    ".sqlite",
+    ".pyc",
+]
+
+
+def _run(cmd: list[str]) -> list[str]:
     result = subprocess.run(
         cmd,
         capture_output=True,
@@ -21,48 +26,37 @@ def _run_git_command(cmd: list[str]) -> list[str]:
 
 
 def git_changed_files() -> list[str]:
-    """
-    Returns both:
-    - modified tracked files
-    - untracked files
+    modified = _run(["git", "diff", "--name-only"])
 
-    Excludes ignored files automatically.
-    """
+    untracked = _run([
+        "git",
+        "ls-files",
+        "--others",
+        "--exclude-standard"
+    ])
 
-    modified_files = _run_git_command(
-        ["git", "diff", "--name-only"]
-    )
+    all_files = modified + untracked
 
-    untracked_files = _run_git_command(
-        [
-            "git",
-            "ls-files",
-            "--others",
-            "--exclude-standard"
-        ]
-    )
-
-    # Deduplicate while preserving order
+    filtered = []
     seen = set()
-    combined = []
 
-    for file in modified_files + untracked_files:
-        if file not in seen:
-            seen.add(file)
-            combined.append(file)
+    for f in all_files:
+        if any(p in f for p in IGNORE_PATTERNS):
+            continue
 
-    return combined
+        if f.startswith("context/") or f.startswith("tools/"):
+            continue
+
+        if f not in seen:
+            seen.add(f)
+            filtered.append(f)
+
+    return filtered
 
 
 def git_diff(file_path: str) -> str:
-    """
-    Returns git diff output for a specific file.
-    """
-
-    cmd = ["git", "diff", file_path]
-
     result = subprocess.run(
-        cmd,
+        ["git", "diff", file_path],
         capture_output=True,
         text=True
     )
