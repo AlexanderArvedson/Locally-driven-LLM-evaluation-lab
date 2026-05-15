@@ -198,8 +198,7 @@ class TaskRunner:
             self.result_store.save_result(
                 run_id,
                 execution_result,
-                context.workspace,
-                task
+                context.workspace
             )
             logger.info(f"✓ Results persisted")
         except Exception as e:
@@ -345,6 +344,13 @@ class TaskRunner:
         constraints = "\n".join(f"  - {c}" for c in model_instructions.get("constraints", []))
         rules = "\n".join(f"  - {r}" for r in model_instructions.get("rules", []))
         
+        reference_block = ""
+        if reference_solution:
+            reference_block = (
+                f"REFERENCE SOLUTION (for iteration {iteration}):\n"
+                f"```python\n{reference_solution}\n```\n"
+            )
+
         prompt = f"""You are an expert Python developer. Your task is to refactor and fix code.
 
 TASK: {task.metadata.name}
@@ -364,7 +370,7 @@ CURRENT CODE:
 EXPECTED BEHAVIOR:
 {task.spec.expected_behavior}
 
-{f'REFERENCE SOLUTION (for iteration {iteration}):' + chr(10) + '```python' + chr(10) + reference_solution + chr(10) + '```' + chr(10) if reference_solution else ''}
+{reference_block}
 
 OUTPUT INSTRUCTIONS:
 1. Return ONLY the complete, corrected Python code.

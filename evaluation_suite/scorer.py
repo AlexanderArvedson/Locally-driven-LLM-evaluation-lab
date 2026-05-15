@@ -206,8 +206,8 @@ class TaskScorer:
     @staticmethod
     def _check_signature_compliance(content: str, expected_signature: str) -> bool:
         """Check if function has correct signature"""
-        # Look for the function definition
-        return bool(re.search(r'def\s+generate_user_report\s*\(\s*users\s*\)', content))
+        # Use literal expected signature from scoring rules for deterministic checks.
+        return expected_signature in content
 
     @staticmethod
     def _contains_class_definition(content: str) -> bool:

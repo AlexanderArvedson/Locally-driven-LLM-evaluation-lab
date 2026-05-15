@@ -16,7 +16,6 @@ import hashlib
 import shutil
 from pathlib import Path
 from typing import Optional
-from datetime import datetime
 
 from pydantic import BaseModel, Field
 from loguru import logger
@@ -24,7 +23,6 @@ from loguru import logger
 from .scorer import ScoringResult
 from .validator import ValidationReport
 from .workspace_manager import IsolatedWorkspace
-from .task_loader import Task
 
 
 class RunArtifacts(BaseModel):
@@ -93,8 +91,7 @@ class ResultStore:
         self,
         run_id: str,
         execution_result: ExecutionResult,
-        workspace: Optional[IsolatedWorkspace] = None,
-        task: Optional[Task] = None
+        workspace: Optional[IsolatedWorkspace] = None
     ) -> str:
         """
         Save execution result and artifacts.
@@ -108,7 +105,6 @@ class ResultStore:
             run_id: Unique run identifier (UUID)
             execution_result: ExecutionResult with scoring and attempts
             workspace: IsolatedWorkspace with modified files
-            task: Task definition for metadata
             
         Returns:
             Path to saved result.json
@@ -135,7 +131,11 @@ class ResultStore:
             try:
                 report_dst = artifacts_dir / "validation_report.json"
                 with open(report_dst, "w", encoding="utf-8") as f:
-                    json.dump(execution_result.execution_attempts[-1].validation_report.dict(), f, indent=2)
+                    json.dump(
+                        execution_result.execution_attempts[-1].validation_report.model_dump(),
+                        f,
+                        indent=2,
+                    )
                 execution_result.artifacts.validation_report_path = "artifacts/validation_report.json"
                 logger.info(f"✓ Saved validation report")
             except Exception as e:
@@ -146,7 +146,7 @@ class ResultStore:
         
         try:
             with open(result_path, "w", encoding="utf-8") as f:
-                json.dump(execution_result.dict(), f, indent=2, default=str)
+                json.dump(execution_result.model_dump(mode="json"), f, indent=2, default=str)
             logger.info(f"✓ Saved result.json")
         except Exception as e:
             logger.error(f"Failed to save result: {str(e)}")

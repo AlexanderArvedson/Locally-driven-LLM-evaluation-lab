@@ -10,7 +10,6 @@ Automatically detects format and extracts content.
 
 import json
 import re
-from pathlib import Path
 from typing import Optional
 from enum import Enum
 
