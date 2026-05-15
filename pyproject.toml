@@ -6,11 +6,15 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "faiss-cpu>=1.13.2",
+    "langchain-core>=1.4.0",
+    "langfuse>=4.6.1",
+    "langgraph>=1.2.0",
     "loguru>=0.7.3",
     "pathspec>=1.1.1",
     "psutil>=7.2.2",
     "pydantic>=2.13.4",
     "pytest>=9.0.3",
+    "python-dotenv>=1.2.2",
     "requests>=2.33.1",
     "rich>=15.0.0",
     "tqdm>=4.67.3",
