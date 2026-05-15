@@ -18,7 +18,6 @@ Supports iteration: model gets multiple attempts if validation fails.
 
 import uuid
 import time
-import json
 import requests
 from pathlib import Path
 from datetime import datetime

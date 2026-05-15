@@ -86,8 +86,7 @@ class TaskScorer:
     def calculate_compliance_score(
         modified_template: Path,
         task_id: str,
-        scoring_rules: Optional[Dict[str, Any]] = None,
-        validation_report: Optional[ValidationReport] = None
+        scoring_rules: Optional[Dict[str, Any]] = None
     ) -> int:
         """
         Calculate compliance score using task-specific rules.
@@ -100,7 +99,6 @@ class TaskScorer:
             modified_template: Path to modified template file
             task_id: Task identifier
             scoring_rules: Dict of scoring rules from task spec
-            validation_report: ValidationReport for context
             
         Returns:
             Compliance score (0-10)
@@ -334,11 +332,10 @@ class TaskScorer:
         task_success = validation_report.overall_passed
         
         # Check if tests passed
-        tests_result = None
-        for stage in validation_report.stages:
-            if stage.stage == ValidationStage.TESTS:
-                tests_result = stage
-                break
+        tests_result = next(
+            (stage for stage in validation_report.stages if stage.stage == ValidationStage.TESTS),
+            None,
+        )
         
         verification_passed = tests_result.passed if tests_result else False
         
@@ -351,8 +348,7 @@ class TaskScorer:
             compliance_score = TaskScorer.calculate_compliance_score(
                 modified_template_path,
                 task_id,
-                scoring_rules,
-                validation_report
+                scoring_rules
             )
         
         # Patch metrics
