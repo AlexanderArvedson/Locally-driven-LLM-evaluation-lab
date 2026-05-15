@@ -13,6 +13,9 @@ python main.py task_01 qwen2.5-coder
 # With iteration control
 python main.py task_01 qwen2.5-coder --iterations 3
 
+# Increase model API timeout for slower generations
+python main.py task_01 qwen2.5-coder --model-timeout 300
+
 # List available tasks
 python main.py --list-tasks
 

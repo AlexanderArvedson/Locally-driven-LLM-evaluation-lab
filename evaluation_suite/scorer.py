@@ -60,6 +60,9 @@ class TaskScorer:
     2. Compliance score from task-specific rules
     3. Regression detection from validation
     4. Metrics (iterations, lines changed, runtime, tokens)
+
+    Note: Compliance checks intentionally use lightweight regex heuristics
+    for speed and determinism. Test validation remains the source of truth.
     """
 
     @staticmethod

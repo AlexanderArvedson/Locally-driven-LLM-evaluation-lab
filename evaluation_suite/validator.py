@@ -106,6 +106,19 @@ class TemplateValidator:
                 details={"lines_of_code": len(content.splitlines())}
             )
             
+        except IndentationError as e:
+            logger.error(f"✗ Indentation error at line {e.lineno}")
+            return ValidationResult(
+                passed=False,
+                stage=ValidationStage.SYNTAX,
+                error_type=ErrorType.SYNTAX_ERROR,
+                error_message=f"Line {e.lineno}: Indentation error",
+                details={
+                    "line_number": e.lineno,
+                    "message": str(e)
+                }
+            )
+
         except SyntaxError as e:
             logger.error(f"✗ Syntax error at line {e.lineno}: {e.msg}")
             return ValidationResult(
@@ -118,19 +131,6 @@ class TemplateValidator:
                     "offset": e.offset,
                     "text": e.text or "",
                     "message": e.msg
-                }
-            )
-            
-        except IndentationError as e:
-            logger.error(f"✗ Indentation error at line {e.lineno}")
-            return ValidationResult(
-                passed=False,
-                stage=ValidationStage.SYNTAX,
-                error_type=ErrorType.SYNTAX_ERROR,
-                error_message=f"Line {e.lineno}: Indentation error",
-                details={
-                    "line_number": e.lineno,
-                    "message": str(e)
                 }
             )
             
@@ -436,6 +436,8 @@ class TemplateValidator:
         report = ValidationReport(overall_passed=False)
         
         template_path = workspace_root / template_file
+        # Keep tests path relative here; validate_tests() resolves it against
+        # workspace_root to support both relative and absolute inputs safely.
         tests_path = Path(tests_dir)
         reference_path = workspace_root / reference_file
         
