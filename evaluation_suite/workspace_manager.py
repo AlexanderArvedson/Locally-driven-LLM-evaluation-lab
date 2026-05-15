@@ -11,7 +11,7 @@ import shutil
 from pathlib import Path
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from loguru import logger
 
 
@@ -25,8 +25,7 @@ class IsolatedWorkspace(BaseModel):
     reference_file: Path = Field(description="workspace/run_<uuid>/reference.py")
     spec_file: Path = Field(description="workspace/run_<uuid>/task/spec.json")
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @property
     def relative_template(self) -> str:

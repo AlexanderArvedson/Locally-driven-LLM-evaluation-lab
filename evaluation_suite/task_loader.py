@@ -12,7 +12,7 @@ import json
 from pathlib import Path
 from typing import Optional, Dict, Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from loguru import logger
 
 
@@ -27,8 +27,7 @@ class TaskMetadata(BaseModel):
     entry_file: str = "template.py"
     expected_behavior: str = ""
     
-    class Config:
-        extra = "allow"  # Allow additional fields
+    model_config = ConfigDict(extra="allow")  # Allow additional fields
 
 
 class ExecutionConfig(BaseModel):
@@ -38,8 +37,7 @@ class ExecutionConfig(BaseModel):
     validation_order: list[str] = Field(default_factory=lambda: ["syntax", "imports", "tests"])
     test_command: str = "pytest tests/ -v"
     
-    class Config:
-        extra = "allow"
+    model_config = ConfigDict(extra="allow")
 
 
 class EvaluationConfig(BaseModel):
@@ -49,8 +47,7 @@ class EvaluationConfig(BaseModel):
     max_score: int = 10
     compliance_threshold: str = ""
     
-    class Config:
-        extra = "allow"
+    model_config = ConfigDict(extra="allow")
 
 
 class TaskSpec(BaseModel):
@@ -71,8 +68,7 @@ class TaskSpec(BaseModel):
     research_signal: str = ""
     notes: str = ""
     
-    class Config:
-        extra = "allow"
+    model_config = ConfigDict(extra="allow")
 
 
 class Task(BaseModel):
@@ -85,8 +81,7 @@ class Task(BaseModel):
     spec_path: Path
     task_root: Path
     
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     
     @property
     def task_id(self) -> str:

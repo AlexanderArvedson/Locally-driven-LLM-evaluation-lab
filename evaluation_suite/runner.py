@@ -25,7 +25,7 @@ from datetime import datetime
 from typing import Optional
 
 from loguru import logger
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 from .task_loader import TaskLoader
 from .workspace_manager import WorkspaceManager, IsolatedWorkspace
@@ -49,8 +49,7 @@ class ExecutionContext(BaseModel):
     final_iteration: int = 0
     start_time: float = 0.0
     
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class TaskRunner:
