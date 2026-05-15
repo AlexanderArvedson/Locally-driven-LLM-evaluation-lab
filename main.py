@@ -4,6 +4,7 @@ Main entry point for task execution and evaluation.
 
 Usage:
     python main.py task_01 qwen2.5-coder [--iterations 3]
+    python main.py task_01 qwen2.5-coder [--model-timeout 300]
     python main.py --list-tasks
 """
 
@@ -53,6 +54,13 @@ Examples:
         default=None,
         help="Maximum iterations (default: from task spec)"
     )
+
+    parser.add_argument(
+        "--model-timeout",
+        type=int,
+        default=300,
+        help="Timeout in seconds for each model API request"
+    )
     
     parser.add_argument(
         "--list-tasks",
@@ -101,7 +109,7 @@ Examples:
             parser.print_help()
             return 1
         
-        runner = TaskRunner()
+        runner = TaskRunner(model_timeout_seconds=args.model_timeout)
         ctx = runner.run_task(
             task_id=args.task_id,
             model_name=args.model,

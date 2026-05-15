@@ -54,6 +54,10 @@ coverage.xml
 # Keep workspace/ directory structure but ignore individual runs
 workspace/run_*/
 
+# Evaluation run results
+# Keep results/ structure but ignore individual run artifacts
+results/singular_runs/run_*/
+
 # IDE
 .vscode/
 .idea/

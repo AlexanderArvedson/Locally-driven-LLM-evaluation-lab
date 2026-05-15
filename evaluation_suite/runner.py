@@ -71,7 +71,8 @@ class TaskRunner:
         tasks_base_dir: Optional[Path] = None,
         workspace_base_dir: Optional[Path] = None,
         results_base_dir: Optional[Path] = None,
-        api_endpoint: str = OLLAMA_API_URL
+        api_endpoint: str = OLLAMA_API_URL,
+        model_timeout_seconds: int = 300
     ):
         """
         Initialize task runner.
@@ -81,15 +82,18 @@ class TaskRunner:
             workspace_base_dir: Workspace directory (default: workspace)
             results_base_dir: Results directory (default: results/singular_runs)
             api_endpoint: Ollama API endpoint
+            model_timeout_seconds: Timeout for the model API request in seconds
         """
         self.task_loader = TaskLoader(tasks_base_dir)
         self.workspace_manager = WorkspaceManager(workspace_base_dir)
         self.result_store = ResultStore(results_base_dir)
         self.validator = TemplateValidator()
         self.api_endpoint = api_endpoint
+        self.model_timeout_seconds = model_timeout_seconds
         
         logger.info(f"TaskRunner initialized")
         logger.info(f"  API endpoint: {self.api_endpoint}")
+        logger.info(f"  Model timeout: {self.model_timeout_seconds}s")
         logger.info(f"  Tasks: {self.task_loader.tasks_base_dir}")
         logger.info(f"  Workspace: {self.workspace_manager.workspace_base}")
         logger.info(f"  Results: {self.result_store.results_base}")
@@ -256,7 +260,7 @@ class TaskRunner:
             model_output = self._call_model(
                 prompt,
                 context.model_name,
-                timeout_seconds=task.timeout_seconds
+                timeout_seconds=self.model_timeout_seconds
             )
             logger.info(f"  Response length: {len(model_output)} characters")
         except Exception as e:

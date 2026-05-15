@@ -436,7 +436,7 @@ class TemplateValidator:
         report = ValidationReport(overall_passed=False)
         
         template_path = workspace_root / template_file
-        tests_path = workspace_root / tests_dir
+        tests_path = Path(tests_dir)
         reference_path = workspace_root / reference_file
         
         # Calculate hashes
