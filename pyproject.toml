@@ -1,21 +1,61 @@
 [project]
 name = "locally-driven-llm"
 version = "0.1.0"
-description = "Add your description here"
+description = "Local LLM runtime + evaluation system"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.11,<3.13"
+
 dependencies = [
-    "faiss-cpu>=1.13.2",
-    "langchain-core>=1.4.0",
-    "langfuse>=4.6.1",
-    "langgraph>=1.2.0",
-    "loguru>=0.7.3",
-    "pathspec>=1.1.1",
-    "psutil>=7.2.2",
+    # -------------------------
+    # RUNTIME (always needed)
+    # -------------------------
+    "fastapi>=0.136.1",
+    "uvicorn[standard]>=0.47.0",
+    "click>=8.1.8",
+    "httpx>=0.28.1",
     "pydantic>=2.13.4",
-    "pytest>=9.0.3",
     "python-dotenv>=1.2.2",
-    "requests>=2.33.1",
+    "loguru>=0.7.3",
+
+    # -------------------------
+    # ORCHESTRATION / LLM LAYER
+    # -------------------------
+    "langgraph>=1.2.0",
+    "langchain-core>=1.4.0",
+
+    # -------------------------
+    # OBSERVABILITY
+    # -------------------------
+    "langfuse>=4.6.1",
+]
+
+# -------------------------
+# OPTIONAL DEPENDENCY GROUPS
+# -------------------------
+[project.optional-dependencies]
+
+# Evaluation harness (NOT runtime)
+eval = [
+    "pytest>=9.0.3",
     "rich>=15.0.0",
     "tqdm>=4.67.3",
+    "psutil>=7.2.2",
+    "faiss-cpu>=1.13.2",
 ]
+
+# Development tooling
+dev = [
+    "pytest>=9.0.3",
+    "rich>=15.0.0",
+]
+
+# -------------------------
+# UV CONFIGURATION
+# -------------------------
+# This project is treated as an application/runtime
+# rather than a distributable Python package.
+#
+# Prevents uv/setuptools from trying to build/install
+# the repository as a wheel/package.
+[tool.uv]
+package = false
