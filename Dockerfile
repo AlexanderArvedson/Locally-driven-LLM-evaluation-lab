@@ -9,7 +9,7 @@ RUN pip install --no-cache-dir uv
 COPY pyproject.toml ./
 
 # install dependencies into container environment
-RUN uv sync --frozen --no-install-project
+RUN uv sync --no-install-project
 
 # copy application code AFTER dependencies are installed
 COPY . .
