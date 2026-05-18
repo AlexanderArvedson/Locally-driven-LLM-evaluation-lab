@@ -16,11 +16,7 @@ services:
       UV_LINK_MODE: copy
 
     volumes:
-      # Mount source code
       - ..:/app
-
-      # Prevent host .venv from overwriting container venv
-      - runtime_venv:/app/.venv
 
     depends_on:
       - ollama
@@ -29,17 +25,12 @@ services:
 
   ollama:
     image: ollama/ollama:latest
-
     container_name: my_ollama
-
     ports:
       - "11434:11434"
-
     volumes:
       - ollama_data:/root/.ollama
-
     restart: unless-stopped
 
 volumes:
   ollama_data:
-  runtime_venv:

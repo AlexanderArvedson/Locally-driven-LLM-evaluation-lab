@@ -1,44 +1,20 @@
-# -------------------------
-# BASE IMAGE
-# -------------------------
-FROM python:3.11-slim
+FROM python:3.12-slim
 
-# -------------------------
-# WORKDIR
-# -------------------------
 WORKDIR /app
 
-# -------------------------
-# INSTALL UV
-# -------------------------
+# install uv
 RUN pip install --no-cache-dir uv
 
-# -------------------------
-# COPY PROJECT FILES
-# -------------------------
+# copy dependency definition first
 COPY pyproject.toml ./
 
-# Optional lockfile
-# COPY uv.lock ./
+# install dependencies into container environment
+RUN uv sync --frozen --no-install-project
 
-# -------------------------
-# INSTALL DEPENDENCIES
-# -------------------------
-# --no-install-project prevents uv from attempting
-# to build/install the repository itself.
-RUN uv sync --no-install-project
-
-# -------------------------
-# COPY SOURCE CODE
-# -------------------------
+# copy application code AFTER dependencies are installed
 COPY . .
 
-# -------------------------
-# EXPOSE PORT
-# -------------------------
 EXPOSE 8000
 
-# -------------------------
-# START APPLICATION
-# -------------------------
-CMD ["uv", "run", "uvicorn", "runtime.app:app", "--host", "0.0.0.0", "--port", "8000"]
+# run python directly (no uv at runtime)
+CMD ["python", "-m", "uvicorn", "runtime.app:app", "--host", "0.0.0.0", "--port", "8000"]

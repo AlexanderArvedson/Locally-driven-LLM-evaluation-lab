@@ -3,7 +3,7 @@ name = "locally-driven-llm"
 version = "0.1.0"
 description = "Local LLM runtime + evaluation system"
 readme = "README.md"
-requires-python = ">=3.11,<3.15"
+requires-python = ">=3.11,<3.13"
 
 dependencies = [
     # -------------------------
