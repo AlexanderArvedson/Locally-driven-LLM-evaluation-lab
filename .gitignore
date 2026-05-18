@@ -49,6 +49,30 @@ coverage.xml
 *.py.cover
 .hypothesis/
 .pytest_cache/
+
+# Workspace isolation (per-run task workspaces)
+# Keep workspace/ directory structure but ignore individual runs
+workspace/run_*/
+
+# Evaluation run results
+# Keep results/ structure but ignore individual run artifacts
+results/singular_runs/run_*/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project-specific
+.env
+.env.local
+.pytest_cache/
 cover/
 
 # Translations
