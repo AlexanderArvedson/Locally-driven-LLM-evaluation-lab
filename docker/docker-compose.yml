@@ -1,14 +1,45 @@
 services:
-  # Ollama service
-  ollama:
-    image: ollama/ollama:latest
-    container_name: my_ollama
+  runtime:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+
+    container_name: LocallyDrivenLLM_Runtime
+
     ports:
-      - "11434:11434"
+      - "8000:8000"
+
+    env_file:
+      - ../.env
+
+    environment:
+      UV_LINK_MODE: copy
+
     volumes:
-      - ollama_data:/root/.ollama
+      # Mount source code
+      - ..:/app
+
+      # Prevent host .venv from overwriting container venv
+      - runtime_venv:/app/.venv
+
+    depends_on:
+      - ollama
+
     restart: unless-stopped
 
+  ollama:
+    image: ollama/ollama:latest
+
+    container_name: my_ollama
+
+    ports:
+      - "11434:11434"
+
+    volumes:
+      - ollama_data:/root/.ollama
+
+    restart: unless-stopped
 
 volumes:
   ollama_data:
+  runtime_venv:
