@@ -1,8 +1,7 @@
 
 from __future__ import annotations
 
-from typing import TypedDict, List, Optional, Dict, Any
-from langchain_core.messages import BaseMessage
+from typing import TypedDict, Optional, Dict, Any
 import uuid
 from dataclasses import dataclass, field
 
