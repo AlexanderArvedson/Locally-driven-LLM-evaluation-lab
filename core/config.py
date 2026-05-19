@@ -9,5 +9,5 @@ from pathlib import Path
 # including the model endpoint and repository root path.
 @dataclass(frozen=True)
 class CoreConfig:
-    model_endpoint: str = "http://localhost:11434/api/generate"
+    model_endpoint: str = "http://my_ollama:11434/api/generate"
     repo_root: Path = Path(".")
