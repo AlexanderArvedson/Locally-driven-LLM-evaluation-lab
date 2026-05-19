@@ -1,3 +1,10 @@
+"""Runtime workflow graph for maintenance tasks.
+
+This module builds a small LangGraph StateGraph that runs the
+fetch → generate → verify → review loop. Tasks provide the
+task-specific prompts, extraction and verification helpers.
+"""
+
 from __future__ import annotations
 
 import logging
@@ -8,6 +15,7 @@ from .tasks import RuntimeTask, create_task
 
 logger = logging.getLogger(__name__)
 
+# Default task used by the module-level helper wrappers (primarily for tests)
 DEFAULT_TASK = create_task()
 
 

@@ -288,6 +288,44 @@ Currently tested models:
 - `llama3` (8B, Q4_0)
 - `mistral` (7.2B, Q4_K_M)
 
+## Runtime (LLM-driven maintenance service)
+
+A small runtime provides an event-loop and workflow for model-driven maintenance tasks
+such as `refactoring` and `documentation` improvements. The runtime is in the `runtime/`
+package and is intentionally decoupled from the `evaluation_suite/` harness.
+
+Key files:
+- `runtime/controller.py` — job processing loop, result formatting
+- `runtime/graph.py` — LangGraph workflow (fetch → generate → verify → review)
+- `runtime/llm.py` — Ollama integration (async)
+- `runtime/tracing.py` — Langfuse integration with safe fallbacks
+- `runtime/queue.py` — in-memory async job queue
+- `runtime/tasks/` — task implementations and registry (add new tasks here)
+
+Manual testing (example using the running runtime service):
+
+1. Start Ollama (see `docker/`), then run the runtime server or the FastAPI app.
+
+2. Enqueue a documentation task via `curl` (replace host/port as needed):
+
+```bash
+curl -X POST http://localhost:8000/jobs/ \
+  -H 'Content-Type: application/json' \
+  -d '{"task_type":"documentation", "language":"python", "code":"def f(x):\n    return x*2\n", "context":"Add docstrings and examples."}'
+```
+
+3. Poll for result:
+
+```bash
+curl http://localhost:8000/jobs/<job_id>
+```
+
+Notes:
+- The runtime uses `runtime/tasks/create_task()` to map `task_type` strings to implementations.
+- Add new tasks by creating a class implementing `RuntimeTask` in `runtime/tasks/` and
+  registering it in `runtime/tasks/__init__.py`.
+
+
 ## Research Questions
 
 1. **Constraint Adherence:** Can models maintain function signatures while refactoring?

@@ -33,19 +33,9 @@ class DocumentationTask(RuntimeTask):
         )
 
     def extract_generated_code(self, response: str, language: str) -> str:
-        import re
+        from .utils import extract_code_from_markdown
 
-        pattern = rf"```{re.escape(language)}\n(.*?)\n```"
-        match = re.search(pattern, response, re.DOTALL)
-        if match:
-            return match.group(1)
-
-        pattern = r"```\n(.*?)\n```"
-        match = re.search(pattern, response, re.DOTALL)
-        if match:
-            return match.group(1)
-
-        return response.strip()
+        return extract_code_from_markdown(response, language)
 
     def verify_generated_code(self, generated_code: str, language: str) -> Dict[str, Any]:
         verification: Dict[str, Any] = {
@@ -94,25 +84,6 @@ class DocumentationTask(RuntimeTask):
         return verification
 
     def parse_review_response(self, response: str) -> Dict[str, Any]:
-        import re
+        from .utils import parse_simple_review
 
-        review_data: Dict[str, Any] = {
-            "approved": False,
-            "feedback": response,
-            "score": 0.0,
-        }
-
-        if re.search(r"\byes\b", response, re.IGNORECASE):
-            review_data["approved"] = True
-        elif re.search(r"\bno\b", response, re.IGNORECASE):
-            review_data["approved"] = False
-
-        score_match = re.search(r"(\d+)\s*(?:/10|out of 10)", response, re.IGNORECASE)
-        if score_match:
-            try:
-                score = int(score_match.group(1))
-                review_data["score"] = min(10, max(0, score))
-            except ValueError:
-                pass
-
-        return review_data
+        return parse_simple_review(response)
