@@ -8,6 +8,7 @@ from datetime import datetime
 from .queue import JobQueue, JobStatus
 from .graph import create_graph
 from .state import GraphState, RuntimeContext
+from .tasks import create_task
 from .tracing import create_langfuse_trace, create_span
 
 logger = logging.getLogger(__name__)
@@ -20,7 +21,6 @@ class RuntimeController:
 
     def __init__(self, job_queue: JobQueue):
         self.job_queue = job_queue
-        self.workflow = create_graph()
 
     async def process_jobs(self):
         """Continuously process jobs from the queue."""
@@ -30,6 +30,7 @@ class RuntimeController:
             runtime_context = RuntimeContext(
                 job_id=job.id,
                 start_time=datetime.now(),
+                task_type=job.data.get("task_type", "refactoring"),
             )
 
             trace = create_langfuse_trace(job.data, runtime_context)
@@ -64,12 +65,16 @@ class RuntimeController:
 
         # Extract job input
         job_data = job.data
+        task_type = job_data.get("task_type", "refactoring")
+        task = create_task(task_type)
+        workflow = create_graph(task)
         prompt = job_data.get("prompt", "")
         code = job_data.get("code_to_refactor", job_data.get("code", ""))
         language = job_data.get("language", "python")
         optional_context = job_data.get("context", None)
         max_iterations = job_data.get("max_iterations", 3)
 
+        runtime_context.task_type = task.task_type
         runtime_context.language = language
 
         # Create initial state
@@ -93,7 +98,7 @@ class RuntimeController:
 
         # Execute the graph
         workflow_start = time.time()
-        final_state = await self.workflow.ainvoke(initial_state)
+        final_state = await workflow.ainvoke(initial_state)
         workflow_duration = time.time() - workflow_start
 
         # Format job result
@@ -151,6 +156,7 @@ class RuntimeController:
             "stop_reason": stop_reason,
             "total_time_seconds": elapsed_time,
             "language": runtime_context.language,
+            "task_type": runtime_context.task_type,
         }
 
         if runtime_context.current_model:

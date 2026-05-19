@@ -26,6 +26,7 @@ class RuntimeContext:
     run_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     trace_id: Optional[str] = None
     job_id: Optional[str] = None
+    task_type: Optional[str] = None
     language: Optional[str] = None
     current_model: Optional[str] = None
     start_time: Optional[datetime] = None
