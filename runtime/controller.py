@@ -132,6 +132,15 @@ class RuntimeController:
         )
 
         review_data = final_state.get("review") or {}
+        stop_reason = final_state.get("stop_reason")
+
+        if not stop_reason:
+            if review_data.get("approved"):
+                stop_reason = "approved_by_reviewer"
+            elif final_state.get("iteration", 0) >= final_state.get("max_iterations", 3):
+                stop_reason = "max_iterations_reached"
+            elif final_state.get("generation") is None:
+                stop_reason = "generation_error"
 
         result = {
             "generated_code": final_state.get("generation"),
@@ -139,7 +148,7 @@ class RuntimeController:
             "review_score": review_data.get("score"),
             "approved": review_data.get("approved", False),
             "iterations_used": final_state.get("iteration", 0),
-            "stop_reason": final_state.get("stop_reason"),
+            "stop_reason": stop_reason,
             "total_time_seconds": elapsed_time,
             "language": runtime_context.language,
         }
