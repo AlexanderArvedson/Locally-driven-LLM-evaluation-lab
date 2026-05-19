@@ -85,6 +85,7 @@ class RuntimeController:
             optional_context=optional_context,
             context=None,
             generation=None,
+            verification=None,
             review=None,
             iteration=0,
             max_iterations=max_iterations,
@@ -137,9 +138,12 @@ class RuntimeController:
         )
 
         review_data = final_state.get("review") or {}
+        verification_data = final_state.get("verification") or {}
         stop_reason = final_state.get("stop_reason")
 
         if not stop_reason:
+            if verification_data and not verification_data.get("passed", True):
+                stop_reason = verification_data.get("error_message") or "verification_failed"
             if review_data.get("approved"):
                 stop_reason = "approved_by_reviewer"
             elif final_state.get("iteration", 0) >= final_state.get("max_iterations", 3):
@@ -149,6 +153,7 @@ class RuntimeController:
 
         result = {
             "generated_code": final_state.get("generation"),
+            "verification": verification_data,
             "review_feedback": review_data.get("feedback"),
             "review_score": review_data.get("score"),
             "approved": review_data.get("approved", False),

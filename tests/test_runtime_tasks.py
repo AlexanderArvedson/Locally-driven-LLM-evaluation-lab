@@ -37,3 +37,19 @@ def improved():
 
     assert review["approved"] is True
     assert review["score"] == 9
+
+
+def test_refactoring_task_verification():
+    task = RefactoringTask()
+
+    passing = task.verify_generated_code(
+        """def improved():
+    return True
+""",
+        "python",
+    )
+    failing = task.verify_generated_code("def broken(:\n    pass", "python")
+
+    assert passing["passed"] is True
+    assert failing["passed"] is False
+    assert "Line" in failing["error_message"]

@@ -46,6 +46,19 @@ async def _generate(state: GraphState, task: RuntimeTask) -> GraphState:
     return state
 
 
+async def _verify(state: GraphState, task: RuntimeTask) -> GraphState:
+    logger.info("---VERIFYING CODE---")
+
+    generated_code = state.get("generation") or ""
+    verification = task.verify_generated_code(generated_code, state["language"])
+    state["verification"] = verification
+
+    if not verification.get("passed", False):
+        state["stop_reason"] = verification.get("error_message") or "verification_failed"
+
+    return state
+
+
 async def _review(state: GraphState, task: RuntimeTask) -> GraphState:
     logger.info("---REVIEWING CODE---")
 
@@ -96,6 +109,10 @@ async def generate(state: GraphState) -> GraphState:
     return await _generate(state, DEFAULT_TASK)
 
 
+async def verify(state: GraphState) -> GraphState:
+    return await _verify(state, DEFAULT_TASK)
+
+
 async def review(state: GraphState) -> GraphState:
     return await _review(state, DEFAULT_TASK)
 
@@ -140,6 +157,15 @@ def route_review(state: GraphState) -> str:
     return 'generate'
 
 
+def route_verify(state: GraphState) -> str:
+    verification = state.get("verification") or {}
+
+    if verification.get("passed", False):
+        return "review"
+
+    return END
+
+
 def create_graph(task: RuntimeTask | None = None):
     """Creates the LangGraph workflow for the selected runtime task."""
     active_task = task or DEFAULT_TASK
@@ -150,6 +176,9 @@ def create_graph(task: RuntimeTask | None = None):
     async def generate_node(state: GraphState) -> GraphState:
         return await _generate(state, active_task)
 
+    async def verify_node(state: GraphState) -> GraphState:
+        return await _verify(state, active_task)
+
     async def review_node(state: GraphState) -> GraphState:
         return await _review(state, active_task)
 
@@ -158,12 +187,21 @@ def create_graph(task: RuntimeTask | None = None):
     # Add nodes
     workflow.add_node('fetch_context', fetch_context_node)
     workflow.add_node('generate', generate_node)
+    workflow.add_node('verify', verify_node)
     workflow.add_node('review', review_node)
     
     # Set up edges
     workflow.set_entry_point('fetch_context')
     workflow.add_edge('fetch_context', 'generate')
-    workflow.add_edge('generate', 'review')
+    workflow.add_edge('generate', 'verify')
+    workflow.add_conditional_edges(
+        'verify',
+        route_verify,
+        {
+            'review': 'review',
+            END: END,
+        }
+    )
     workflow.add_conditional_edges(
         'review',
         route_review,

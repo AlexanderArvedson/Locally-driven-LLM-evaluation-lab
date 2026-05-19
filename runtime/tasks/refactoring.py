@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 from typing import Any, Dict, Optional
 
 from ..prompts import generate_refactoring_prompt, generate_review_prompt
@@ -45,6 +46,41 @@ class RefactoringTask(RuntimeTask):
             return match.group(1)
 
         return response.strip()
+
+    def verify_generated_code(self, generated_code: str, language: str) -> Dict[str, Any]:
+        verification: Dict[str, Any] = {
+            "passed": False,
+            "stage": "syntax",
+            "details": {},
+            "error_message": "",
+        }
+
+        if not generated_code or not generated_code.strip():
+            verification["error_message"] = "No generated code to verify"
+            return verification
+
+        if language.lower() != "python":
+            verification["passed"] = True
+            verification["details"] = {"skipped": True, "reason": f"syntax verification not implemented for {language}"}
+            return verification
+
+        try:
+            ast.parse(generated_code)
+            verification["passed"] = True
+            verification["details"] = {"syntax": "passed"}
+            return verification
+        except SyntaxError as exc:
+            verification["error_message"] = f"Line {exc.lineno}: {exc.msg}"
+            verification["details"] = {
+                "line_number": exc.lineno,
+                "offset": exc.offset,
+                "text": exc.text or "",
+            }
+            return verification
+        except Exception as exc:
+            verification["error_message"] = str(exc)
+            verification["details"] = {"exception_type": type(exc).__name__}
+            return verification
 
     def parse_review_response(self, response: str) -> Dict[str, Any]:
         import re

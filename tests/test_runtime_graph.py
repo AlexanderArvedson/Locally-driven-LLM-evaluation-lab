@@ -9,8 +9,10 @@ from runtime.state import GraphState
 from runtime.graph import (
     fetch_context,
     generate,
+    verify,
     review,
     route_review,
+    route_verify,
     _extract_code_from_response,
     _parse_review_response,
 )
@@ -94,6 +96,51 @@ This code is now clearer."""
         assert result["generation"] is not None
         assert 'return "improved"' in result["generation"]
         assert result["stop_reason"] is None
+
+
+@pytest.mark.unit
+class TestVerifyNode:
+    """Tests for the verify node."""
+
+    def test_verify_success(self):
+        state = GraphState(
+            initial_prompt="Refactor this code",
+            code_to_refactor="def foo(): pass",
+            language="python",
+            optional_context=None,
+            context="Use best practices",
+            generation="def foo_improved():\n    return 'improved'",
+            verification=None,
+            review=None,
+            iteration=0,
+            max_iterations=3,
+            stop_reason=None,
+        )
+
+        result = asyncio.run(verify(state))
+
+        assert result["verification"]["passed"] is True
+        assert result["stop_reason"] is None
+
+    def test_verify_failure(self):
+        state = GraphState(
+            initial_prompt="Refactor this code",
+            code_to_refactor="def foo(): pass",
+            language="python",
+            optional_context=None,
+            context="Use best practices",
+            generation="def broken(:\n    pass",
+            verification=None,
+            review=None,
+            iteration=0,
+            max_iterations=3,
+            stop_reason=None,
+        )
+
+        result = asyncio.run(verify(state))
+
+        assert result["verification"]["passed"] is False
+        assert "Line" in result["stop_reason"]
 
     def test_generate_error_handling(self):
         """Test generate node handles errors gracefully."""
@@ -219,6 +266,47 @@ class TestRouteReview:
         result = route_review(state)
 
         assert result == END
+
+
+@pytest.mark.unit
+class TestRouteVerify:
+    """Tests for the route_verify routing function."""
+
+    def test_route_verify_passed(self):
+        state = GraphState(
+            initial_prompt="Refactor",
+            code_to_refactor="code",
+            language="python",
+            optional_context=None,
+            context=None,
+            generation="improved",
+            verification={"passed": True, "details": {"syntax": "passed"}},
+            review=None,
+            iteration=1,
+            max_iterations=3,
+            stop_reason=None,
+        )
+
+        assert route_verify(state) == "review"
+
+    def test_route_verify_failed(self):
+        state = GraphState(
+            initial_prompt="Refactor",
+            code_to_refactor="code",
+            language="python",
+            optional_context=None,
+            context=None,
+            generation="broken",
+            verification={"passed": False, "error_message": "syntax failed"},
+            review=None,
+            iteration=1,
+            max_iterations=3,
+            stop_reason=None,
+        )
+
+        from langgraph.graph import END
+
+        assert route_verify(state) == END
 
     def test_route_review_not_approved_continue(self):
         """Test routing continues generation when not approved."""

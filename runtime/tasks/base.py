@@ -32,5 +32,9 @@ class RuntimeTask(ABC):
         """Extract the task output from the model response."""
 
     @abstractmethod
+    def verify_generated_code(self, generated_code: str, language: str) -> Dict[str, Any]:
+        """Run task-specific verification on the generated output."""
+
+    @abstractmethod
     def parse_review_response(self, response: str) -> Dict[str, Any]:
         """Convert a model review into structured approval data."""

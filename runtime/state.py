@@ -44,6 +44,7 @@ class GraphState(TypedDict):
         optional_context: Optional context for refactoring.
         context: The retrieved/processed context for the refactoring task.
         generation: The generated refactored code from the generation node.
+        verification: Structured verification output from the verification node.
         review: Structured review feedback from the review node.
         iteration: The current iteration number.
         max_iterations: The maximum number of iterations allowed.
@@ -55,6 +56,7 @@ class GraphState(TypedDict):
     optional_context: Optional[str]
     context: Optional[str]
     generation: Optional[str]
+    verification: Optional[Dict[str, Any]]
     review: Optional[Dict[str, Any]]
     iteration: int
     max_iterations: int
