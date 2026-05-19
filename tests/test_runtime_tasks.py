@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from runtime.tasks import RefactoringTask, create_task
+from runtime.tasks import DocumentationTask
 
 
 def test_create_task_defaults_to_refactoring():
@@ -8,6 +9,13 @@ def test_create_task_defaults_to_refactoring():
 
     assert isinstance(task, RefactoringTask)
     assert task.task_type == "refactoring"
+
+
+def test_create_task_documentation():
+    task = create_task("documentation")
+
+    assert isinstance(task, DocumentationTask)
+    assert task.task_type == "documentation"
 
 
 def test_refactoring_task_helpers():
@@ -53,3 +61,26 @@ def test_refactoring_task_verification():
     assert passing["passed"] is True
     assert failing["passed"] is False
     assert "Line" in failing["error_message"]
+
+
+def test_documentation_task_helpers():
+    task = DocumentationTask()
+
+    prompt = task.build_generation_prompt(
+        code="def foo():\n    return 1",
+        language="python",
+        context="Add docstrings",
+    )
+
+    documented = task.verify_generated_code("def foo():\n    '''Return 1.'''\n    return 1\n", "python")
+
+    missing_docs = task.verify_generated_code(
+        "def foo():\n    return 1\n",
+        "python",
+    )
+
+    assert task.normalize_context(None) == ""
+    assert "documentation" in prompt.lower()
+    assert documented["passed"] is True
+    assert missing_docs["passed"] is False
+    assert "docstrings or comments" in missing_docs["error_message"].lower()

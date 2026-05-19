@@ -3,10 +3,12 @@ from __future__ import annotations
 from typing import Dict, Type
 
 from .base import RuntimeTask
+from .documentation import DocumentationTask
 from .refactoring import RefactoringTask
 
 TASK_REGISTRY: Dict[str, Type[RuntimeTask]] = {
     RefactoringTask.task_type: RefactoringTask,
+    DocumentationTask.task_type: DocumentationTask,
 }
 
 
